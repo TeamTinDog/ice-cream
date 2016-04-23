@@ -28,28 +28,30 @@ void truckRouteUpload()
 
 	if (truckRouteFileIn)
 	{
+		// Get first line, store sequence number and date
 		truckRouteFileIn.getline(lineIn, 256, '\n');
 		seqNum = lineIn;
 		seqNum = seqNum.substr(3, 4);
 		date = lineIn;
 		date = date.substr(13, 10);
 
+		// Label error log
 		cout << "Truck Route upload file " << seqNum << ", " << date << endl;
 		errorFileOut << "Truck Route upload file " << seqNum << ", " << date << endl;
 
-		truckRouteFileIn.getline(lineIn, 256, '\n');
+		truckRouteFileIn.getline(lineIn, 256, '\n'); // Get second line
 
-		while (lineIn[0] != 'T' && !truckRouteFileIn.eof())
+		while (lineIn[0] != 'T' && !truckRouteFileIn.eof()) // Process lines until trailer or end of file
 		{
 			lineCount++;
 			validTruckRoute = true;
 
-			for (int i = 0; i < 8; i++)
+			for (int i = 0; i < 8; i++) // Check validity of truck and route IDs
 			{
 				checkDigit = lineIn[i];
 				if (checkDigit < 48 || checkDigit > 57)
 				{
-					if (i < 4)
+					if (i < 4) // If truck ID found to be invalid, print message and move to route ID
 					{
 						cout << "LINE " << lineCount << ": Invalid Truck ID" << endl;
 						errorFileOut << "LINE " << lineCount << ": Invalid Truck ID" << endl;
@@ -57,7 +59,7 @@ void truckRouteUpload()
 						noErrors = false;
 						i = 4;
 					}
-					else
+					else // If route ID found to be invalid, print message and break
 					{
 						cout << "LINE " << lineCount << ": Invalid Route ID" << endl;
 						errorFileOut << "LINE " << lineCount << ": Invalid Route ID" << endl;
@@ -68,7 +70,7 @@ void truckRouteUpload()
 				}
 			}
 
-			if (validTruckRoute)
+			if (validTruckRoute) // If truck and route IDs are valid, make sure rest of line is whitespace or nothing
 			{
 				for (int i = 8; i < 256; i++)
 				{
@@ -95,7 +97,7 @@ void truckRouteUpload()
 			truckRouteFileIn.getline(lineIn, 256, '\n'); // Get next line
 		}
 	}
-	else
+	else // Truck route upload file missing
 	{
 		cout << "Truck Route upload file: ERROR - truckRouteUpload.txt missing" << endl;
 		errorFileOut << "Truck Route upload file: ERROR - truckRouteUpload.txt missing" << endl;
