@@ -3,7 +3,7 @@
 // Team Tin Dog
 
 #ifndef MAINTENANCE_UPLOAD
-#define MAINTENANCE UPLOAD
+#define MAINTENANCE_UPLOAD
 
 #include <iostream>
 #include <string>
@@ -24,7 +24,6 @@ void maintenanceUpload()
 	string seqNum;				// Store sequence number to label error file
 	string maintenanceReason;	// Store reason for maintenance to send to DB
 	bool noErrors = true;		// Keep track of whether errors occured
-	bool validTruckID = true;	// Allows us to stop checking truck ID once error is found
 
 
 	if (maintenanceFileIn) // Does not execute if maintenanceUpload.txt is missing
@@ -45,7 +44,6 @@ void maintenanceUpload()
 		while (lineIn[0] != 'T' && !maintenanceFileIn.eof()) // Loop until trailer or end of file
 		{
 			lineCount++;
-			validTruckID = true;
 
 			// Check that ID is valid
 			for (int i = 0; i < 4; i++)
@@ -53,9 +51,8 @@ void maintenanceUpload()
 				checkDigit = lineIn[i];
 				if (checkDigit < 48 || checkDigit > 57) // Truck ID contains a non-integer character
 				{
-					cout << "LINE " << to_string(lineCount) << ": Invalid truck ID" << endl;
-					errorFileOut << "LINE " << to_string(lineCount) << ": Invalid truck ID" << endl;
-					validTruckID = false;
+					cout << "LINE " << lineCount << ": Invalid truck ID" << endl;
+					errorFileOut << "LINE " << lineCount << ": Invalid truck ID" << endl;
 					noErrors = false;
 					break;
 				}
