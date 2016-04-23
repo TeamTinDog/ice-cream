@@ -60,8 +60,8 @@ void truckUpload()
 				checkDigit = lineIn[i];
 				if (checkDigit < 48 || checkDigit > 57)
 				{
-					cout << "LINE" << to_string(lineCount) << ": Invalid truck ID" << endl;
-					errorFileOut << "LINE" << to_string(lineCount) << ": Invalid truck ID" << endl;
+					cout << "LINE" << lineCount << ": Invalid truck ID" << endl;
+					errorFileOut << "LINE" << lineCount << ": Invalid truck ID" << endl;
 					validTruckID = false;
 					noErrors = false;
 					break;
@@ -77,8 +77,8 @@ void truckUpload()
 						break;
 					if (lineIn[i] != ' ')
 					{
-						cout << "LINE " << to_string(lineCount) << ": Invalid truck ID" << endl;
-						errorFileOut << "LINE " << to_string(lineCount) << ": Invalid truck ID" << endl;
+						cout << "LINE " << lineCount << ": Invalid truck ID" << endl;
+						errorFileOut << "LINE " << lineCount << ": Invalid truck ID" << endl;
 						noErrors = false;
 						break;
 					}
