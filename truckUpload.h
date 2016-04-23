@@ -15,7 +15,7 @@ using namespace std;
 void truckUpload()
 {
 	// Read from truckUpload and write to errorLog
-	ifstream uploadFileIn("truckUpload.txt");
+	ifstream truckFileIn("truckUpload.txt");
 	ofstream errorFileOut("errorLog.txt", ios::app);
 
 	int lineCount = 0;
@@ -24,89 +24,128 @@ void truckUpload()
 	char lineIn[256];
 	bool validRowTotal = true;
 	bool validTruckID = true;
+	string date;
+	string seqNum;
+	bool noErrors = true;
 
-	/*
-	TO BE IMPLEMENTED: clear master list of trucks in database HERE
-	*/
-
-	uploadFileIn.getline(lineIn, 256, '\n'); // read in first line and ignore
-	uploadFileIn.getline(lineIn, 256, '\n'); // read in second line
-
-	while (lineIn[0] != 'T' && !uploadFileIn.eof()) // Repeat until Trailer or end of file
+	if (truckFileIn)
 	{
-		lineCount++;
-		validTruckID = true;
-		
-		// Make sure first 4 characters are integers
-		for (int i = 0; i<4; i++)
-		{
-			checkDigit = lineIn[i];
-			if (checkDigit < 48 || checkDigit > 57)
-			{
-				errorFileOut << "LINE" << to_string(lineCount) << ": Invalid truck ID" << endl;
-				validTruckID = false;
-				break;
-			}
-		}
+		/*
+		TO BE IMPLEMENTED: clear master list of trucks in database HERE
+		*/
 
-		// Make sure line does not contain any other characters besides whitespace
-		if (validTruckID)
+		truckFileIn.getline(lineIn, 256, '\n'); // read in first line
+
+		// Record sequence number and date
+		seqNum = lineIn;
+		seqNum = seqNum.substr(3, 4);
+		date = lineIn;
+		date = date.substr(13, 10);
+
+		// Label error log
+		cout << "Truck upload file " << seqNum << ", " << date << endl;
+		errorFileOut << "Truck upload file " << seqNum << ", " << date << endl;
+
+
+		truckFileIn.getline(lineIn, 256, '\n'); // read in second line
+
+		while (lineIn[0] != 'T' && !truckFileIn.eof()) // Repeat until Trailer or end of file
 		{
-			for (int i = 4; i < 256; i++)
+			lineCount++;
+			validTruckID = true;
+
+			// Make sure first 4 characters are integers
+			for (int i = 0; i < 4; i++)
 			{
-				if (lineIn[i] == '\n' || lineIn[i] == '\0')
-					break;
-				if (lineIn[i] != ' ')
+				checkDigit = lineIn[i];
+				if (checkDigit < 48 || checkDigit > 57)
 				{
-					errorFileOut << "LINE " << to_string(lineCount) << ": Invalid truck ID" << endl;
+					cout << "LINE" << to_string(lineCount) << ": Invalid truck ID" << endl;
+					errorFileOut << "LINE" << to_string(lineCount) << ": Invalid truck ID" << endl;
+					validTruckID = false;
+					noErrors = false;
 					break;
 				}
 			}
-		}
 
-		/*
-		TO BE IMPLEMENTED: Add truck ID to database
-		*/
-
-		uploadFileIn.getline(lineIn, 256, '\n'); // get next line
-	}
-
-	if (lineIn[0] == 'T')
-	{
-		// Make sure row total is four integers
-		for (int i = 2; i < 6; i++)
-		{
-			checkDigit = lineIn[i];
-			if (checkDigit < 48 || checkDigit > 57)
+			// Make sure line does not contain any other characters besides whitespace
+			if (validTruckID)
 			{
-				errorFileOut << "TRAILER: Invalid row total" << endl;
-				validRowTotal = false;
-				break;
+				for (int i = 4; i < 256; i++)
+				{
+					if (lineIn[i] == '\n' || lineIn[i] == '\0')
+						break;
+					if (lineIn[i] != ' ')
+					{
+						cout << "LINE " << to_string(lineCount) << ": Invalid truck ID" << endl;
+						errorFileOut << "LINE " << to_string(lineCount) << ": Invalid truck ID" << endl;
+						noErrors = false;
+						break;
+					}
+				}
 			}
+
+			/*
+			TO BE IMPLEMENTED: Add truck ID to database
+			*/
+
+			truckFileIn.getline(lineIn, 256, '\n'); // get next line
 		}
 
-		// Calculate row total and compare to lineCount
-		if (validRowTotal)
+		if (lineIn[0] == 'T')
 		{
+			// Make sure row total is four integers
 			for (int i = 2; i < 6; i++)
 			{
 				checkDigit = lineIn[i];
-				checkDigit -= 48;
-				rowTotal += checkDigit * pow(10, 5 - i);
+				if (checkDigit < 48 || checkDigit > 57)
+				{
+					cout << "TRAILER: Invalid row total" << endl;
+					errorFileOut << "TRAILER: Invalid row total" << endl;
+					validRowTotal = false;
+					noErrors = false;
+					break;
+				}
 			}
-			if (rowTotal != lineCount)
+
+			// Calculate row total and compare to lineCount
+			if (validRowTotal)
 			{
-				errorFileOut << "TRAILER: Inaccurate row total" << endl;
+				for (int i = 2; i < 6; i++)
+				{
+					checkDigit = lineIn[i];
+					checkDigit -= 48;
+					rowTotal += checkDigit * pow(10, 5 - i);
+				}
+				if (rowTotal != lineCount)
+				{
+					cout << "TRAILER: Inaccurate row total" << endl;
+					errorFileOut << "TRAILER: Inaccurate row total" << endl;
+					noErrors = false;
+				}
 			}
+		}
+		else
+		{
+			cout << "NO TRAILER/TRAILER FORMATTED INCORRECTLY" << endl;
+			errorFileOut << "NO TRAILER/TRAILER FORMATTED INCORRECTLY" << endl;
+			noErrors = false;
 		}
 	}
 	else
 	{
-		errorFileOut << "NO TRAILER/TRAILER FORMATTED INCORRECTLY" << endl;
+		cout << "Truck upload file: ERROR - truckUpload.txt missing" << endl;
+		errorFileOut << "Truck upload file: ERROR - truckUpload.txt missing" << endl;
+	}
+
+	if (noErrors)
+	{
+		cout << "There were no errors" << endl;
+		errorFileOut << "There were no errors" << endl;
 	}
 
 
-	uploadFileIn.close();
+	truckFileIn.close();
 	errorFileOut.close();
 }
 
